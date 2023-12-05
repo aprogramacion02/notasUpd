@@ -2,7 +2,7 @@ import { Component, OnInit, Signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterModule, ActivatedRoute} from '@angular/router';
 import { PdfServiceService } from './pdf-service.service';
-import { SignalSService } from './servises/signal-s.service';
+import { SignalSService } from './services/signal-s.service';
 import {MatIconModule} from '@angular/material/icon';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatButtonModule} from '@angular/material/button';

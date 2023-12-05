@@ -1,7 +1,7 @@
-import { Component, OnDestroy, OnInit, ViewChild, inject, AfterViewInit,ElementRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, inject, AfterViewInit,ElementRef, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SignalSService } from '../../servises/signal-s.service';
-import {  ReactiveFormsModule,FormBuilder } from '@angular/forms';
+import { SignalSService } from '../../services/signal-s.service';
+import {  ReactiveFormsModule,FormBuilder, Validators, FormControl } from '@angular/forms';
 import {MatIconModule} from '@angular/material/icon';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatButtonModule} from '@angular/material/button';
@@ -14,6 +14,11 @@ import {MatPaginator, MatPaginatorModule} from '@angular/material/paginator';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { PdfServiceService } from '../../pdf-service.service';
+import {MatSnackBar} from '@angular/material/snack-bar';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import { SongsService } from '../../services/songs.service';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 export interface PeriodicElement {
   name: string;
   position: number;
@@ -46,30 +51,49 @@ const ELEMENT_DATA: PeriodicElement[] = [
 @Component({
   selector: 'app-prueba',
   standalone: true,
-  imports: [CommonModule,MatButtonModule, MatDividerModule, MatIconModule, MatDatepickerModule, MatNativeDateModule,ReactiveFormsModule,MatExpansionModule,MatInputModule,MatTableModule,MatPaginatorModule, MatProgressBarModule,MatProgressSpinnerModule],
+  imports: [MatDialogModule,CommonModule,MatButtonModule, MatDividerModule, MatIconModule, MatDatepickerModule, MatNativeDateModule,ReactiveFormsModule,MatExpansionModule,MatInputModule,MatTableModule,MatPaginatorModule, MatProgressBarModule,MatProgressSpinnerModule,MatSlideToggleModule],
   templateUrl: './prueba.component.html',
   styleUrl: './prueba.component.scss'
 })
 export class PruebaComponent implements OnInit, OnDestroy, AfterViewInit {
+  constructor(public dialog: MatDialog, private elementRef: ElementRef, private _pdfService: PdfServiceService, private formBuilder: FormBuilder, private matSnackBar: MatSnackBar, private songsService: SongsService) {}
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
   dataSource = new MatTableDataSource<PeriodicElement>(ELEMENT_DATA);
   colorIcon = '';
+  songsSignal!:Signal<any>;
   clickedRows:any = {};
+  myControl = new FormControl('');
+  filteredOptions:any[] = [];
+  objSelect:any = {};
   progres= 10;
   pageSize = [5, 10, 20];
   loading = true;
+  // dialog = inject(MatDialog);
   private signalServise = inject(SignalSService);
-  private elementRef = inject(ElementRef);
-  private _pdfService = inject(PdfServiceService);
-  private formBuilder = inject(FormBuilder);
+  // private elementRef = inject(ElementRef);
+  // private _pdfService = inject(PdfServiceService);
+  // private formBuilder = inject(FormBuilder);
+  // private matSnackBar = inject(MatSnackBar);
+  // private songsService = inject(SongsService);
   dataPiker = this.formBuilder.group({
     start:[null],
     end:[null]
+  });
+  formSongs = this.formBuilder.group({
+    title:['', Validators.required],
+    artist:['', Validators.required],
+    genre:['', Validators.required],
+    album:['', Validators.required],
+    duration:['', Validators.required],
+    year:['', Validators.required],
+    trackNumber:['', Validators.required],
+    isExplicit:[true]
   });
   step = -1;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   ngOnInit(): void {
     this.signalServise.setShow(true);
+    this.songsSignal = this.songsService.getAllSignal();
     this.dataSource = new MatTableDataSource<PeriodicElement>(ELEMENT_DATA);
     setTimeout(() => {
       this.loading = false;
@@ -82,8 +106,31 @@ export class PruebaComponent implements OnInit, OnDestroy, AfterViewInit {
     (this.elementRef.nativeElement.querySelector('#mat-paginator-page-size-label-0').textContent = "Items Por Pagina:");
   }
   ngOnDestroy(): void {
-    
     this.signalServise.setShow(false);
+  }
+  openDialog() {
+    const dialogRef = this.dialog.open(DialogContentExampleDialog);
+    dialogRef.disableClose = true;
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(`Dialog result: ${result}`);
+    });
+  }
+  inputSelected(): void {
+    const inpSong = this.myControl.value;
+    if(!!inpSong){
+      this.filteredOptions = this.songsSignal().filter(e=>
+        e.title.toUpperCase().includes(inpSong.toUpperCase()) ||
+        e.artist.toUpperCase().includes(inpSong.toUpperCase()) 
+      );
+    }
+    else{
+      this.filteredOptions = [];
+    }
+  }
+  clickSelected(obj:any): void {
+    this.myControl.setValue(`${obj.title} - ${obj.artist}`);
+    this.objSelect = obj;
+    this.filteredOptions = [];
   }
   btnclick(item:string): void {
     console.log('object',item);
@@ -108,6 +155,14 @@ export class PruebaComponent implements OnInit, OnDestroy, AfterViewInit {
   focusInp(id=''){
     this.colorIcon = id;
   }
+  isNumeric(event:Event):void{
+    const valor = event.target['getAttribute']('formcontrolname');
+    !!valor && this.formSongs.get(valor).setValue(event.target['value'].replace(/\D/g, ''));
+  };
+  isCaracter(event:Event):void{
+    const valor = event.target['getAttribute']('formcontrolname');
+    !!valor && this.formSongs.get(valor).setValue(event.target['value'].replace(/[^a-zA-Z ñÑ]/g, '').toUpperCase());
+  }
   filterTable(item:string){
     const fillDat = ELEMENT_DATA.filter(e=>e.name.toUpperCase().includes(item.toUpperCase()))
     this.dataSource = new MatTableDataSource<PeriodicElement>(fillDat);
@@ -125,4 +180,29 @@ export class PruebaComponent implements OnInit, OnDestroy, AfterViewInit {
   generatePdf(){
     this._pdfService.generatePdf();
   }
-}
+  send(){
+    if(this.formSongs.status == 'INVALID'){
+      this.matSnackBar.open('Tiene Campos Vacios', 'cerrar',{duration:3000});
+    }
+    else{
+      this.songsService.songsCreate(this.formSongs.value).subscribe({
+        next:(res)=>{
+          this.formSongs.reset();
+          console.log(res);
+          this.matSnackBar.open('Guardado Correctamente', 'cerrar',{duration:3000});
+          this.formSongs.get('isExplicit').setValue(true);
+        },
+        error:(err)=>{
+          console.log(err);
+        }
+      });
+    }
+  }
+};
+@Component({
+  selector: 'dialog-content-example-dialog',
+  templateUrl: 'dialog-content-example-dialog.html',
+  standalone: true,
+  imports: [MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule],
+})
+export class DialogContentExampleDialog {}

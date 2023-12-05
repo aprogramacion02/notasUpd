@@ -1,11 +1,33 @@
 
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<mat-drawer-container style="background-color: #333;" class="example-container" [hasBackdrop]="true">
+<mat-drawer-container style="background-color: #333;" class="example-container h-100" [hasBackdrop]="true">
   <mat-drawer class="w-25" #drawer mode="over">
-    <button mat-raised-button (click)="drawer.toggle()">Volver</button>
+    <div>
+      <button mat-raised-button (click)="drawer.toggle()">Volver</button>
+    </div>
+    @defer (when getSign()) {
+      @if(getSign()){
+        <button mat-raised-button (click)="drawer.toggle()" [routerLink]="['/']" routerLinkActive="router-link-active" style="margin-top: 15px;">
+          Home
+        </button>
+      }
+    }
+    @defer (when !getSign()) {
+      @if(!getSign()) {
+        <button mat-raised-button (click)="drawer.toggle()" [routerLink]="['/prueba']" routerLinkActive="router-link-active" style="margin-top: 15px;">
+          Prueba
+        </button>
+      }
+      @if(!getSign()) {
+        <button mat-raised-button (click)="drawer.toggle()" [routerLink]="['/songs']" routerLinkActive="router-link-active" style="margin-top: 15px;">
+          Songs
+        </button>
+      }
+    }
   </mat-drawer>
   <mat-drawer-content>
-    <div style="position: sticky; top: 0;">
+    <div style="position: sticky; top: 0;z-index: 9999;
+    visibility: visible;">
       <button mat-icon-button color="primary"(click)="drawer.toggle()" >
         <mat-icon>menu</mat-icon>
       </button>

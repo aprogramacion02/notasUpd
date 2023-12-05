@@ -1,0 +1,6 @@
+<ul>
+    @for (item of songsSignal(); track $index) {
+        <li class="text-danger" style="list-style: none;cursor: pointer;" [routerLink]="['/songs',item._id]" routerLinkActive="router-link-active" >{{item.album}} - {{item.title}}</li>
+    }
+</ul>
+
