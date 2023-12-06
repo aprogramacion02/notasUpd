@@ -70,6 +70,7 @@ app.put('/:songId', async (req, res) => {
     try {
         // el new:true es para que ns devuelva el dato actualizado si no lo ponemos nos devuelve el anterior
         const song = await Song.findByIdAndUpdate(songId,req.body,{new:true});
+        res.json(song);
     } catch (error) {
         console.log(error.message);
         res.json({ error: error.message });

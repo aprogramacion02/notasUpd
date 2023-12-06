@@ -1,16 +1,53 @@
 <h2 mat-dialog-title>Editar Cancion</h2>
 <mat-dialog-content class="mat-typography">
-    <div class="d-flex gap-2">
-        
-    </div>
-    <mat-form-field appearance="outline">
-        <mat-label>Outline form field</mat-label>
-        <input matInput placeholder="Placeholder">
-        <mat-icon matSuffix>sentiment_very_satisfied</mat-icon>
-        <mat-hint>Hint</mat-hint>
-      </mat-form-field>
+    <form [formGroup]="formSongEdit">
+    <div class="d-flex gap-2 mt-2 justify-content-around">
+            <mat-form-field appearance="outline">
+                <mat-label>Title</mat-label>
+                <input matInput placeholder="Title" formControlName="title">
+                <mat-icon matSuffix>badge</mat-icon>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>Artist</mat-label>
+                <input matInput placeholder="Madona" formControlName="artist">
+                <mat-icon matSuffix>person</mat-icon>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>Genre</mat-label>
+                <input matInput placeholder="Pop" formControlName="genre">
+                <mat-icon matSuffix>equalizer</mat-icon>
+            </mat-form-field>
+        </div>
+        <div class="d-flex gap-2 mt-2 justify-content-around">
+            <mat-form-field appearance="outline">
+                <mat-label>album</mat-label>
+                <input matInput placeholder="album" formControlName="album">
+                <mat-icon matSuffix>library_music</mat-icon>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>Duration</mat-label>
+                <input matInput placeholder="678" formControlName="duration">
+                <mat-icon matSuffix>schedule</mat-icon>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>Year</mat-label>
+                <input matInput placeholder="2023" formControlName="year">
+                <mat-icon matSuffix>date_range</mat-icon>
+            </mat-form-field>
+        </div>
+        <div class="d-flex gap-2 mt-2 justify-content-around">
+            <mat-form-field appearance="outline">
+                <mat-label>Track Number</mat-label>
+                <input matInput placeholder="87" formControlName="trackNumber">
+                <mat-icon matSuffix>music_note</mat-icon>
+            </mat-form-field>
+            <span class="mt-3" style="margin-right: -130px;">Is Explicit</span>
+            <mat-slide-toggle class="mt-3 example-margin" color="accent" formControlName="isExplicit">
+            </mat-slide-toggle>
+        </div>
+    </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>Cancel</button>
-    <button mat-button [mat-dialog-close]="true" cdkFocusInitial>Install</button>
+    <button mat-button mat-dialog-close>Cancelar</button>
+    <button mat-button [mat-dialog-close]="true" cdkFocusInitial (click)="edit()">Editar</button>
 </mat-dialog-actions>

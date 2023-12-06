@@ -19,13 +19,14 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import { SongsService } from '../../services/songs.service';
 import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { Subscription } from 'rxjs';
 export interface PeriodicElement {
   name: string;
   position: number;
   weight: number;
   symbol: string;
 }
-
+let data:any={}
 const ELEMENT_DATA: PeriodicElement[] = [
   {position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H'},
   {position: 2, name: 'Helium', weight: 4.0026, symbol: 'He'},
@@ -64,17 +65,11 @@ export class PruebaComponent implements OnInit, OnDestroy, AfterViewInit {
   clickedRows:any = {};
   myControl = new FormControl('');
   filteredOptions:any[] = [];
-  objSelect:any = {};
   progres= 10;
   pageSize = [5, 10, 20];
   loading = true;
-  // dialog = inject(MatDialog);
+  private saubForm:Subscription;
   private signalServise = inject(SignalSService);
-  // private elementRef = inject(ElementRef);
-  // private _pdfService = inject(PdfServiceService);
-  // private formBuilder = inject(FormBuilder);
-  // private matSnackBar = inject(MatSnackBar);
-  // private songsService = inject(SongsService);
   dataPiker = this.formBuilder.group({
     start:[null],
     end:[null]
@@ -107,12 +102,25 @@ export class PruebaComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   ngOnDestroy(): void {
     this.signalServise.setShow(false);
+    !!this.saubForm && !this.saubForm.closed && this.saubForm.unsubscribe();
   }
   openDialog() {
     const dialogRef = this.dialog.open(DialogContentExampleDialog);
     dialogRef.disableClose = true;
     dialogRef.afterClosed().subscribe(result => {
-      console.log(`Dialog result: ${result}`);
+      if(result){
+        const id = data._id;
+        const datos = structuredClone(data);
+        delete datos._id;
+        this.saubForm = this.songsService.updateSongs({id,datos}).subscribe({
+          next:(data) => {
+            console.log(data);
+          },
+          error:(err) => {
+            console.log(err);
+          }
+        })
+      }
     });
   }
   inputSelected(): void {
@@ -129,8 +137,9 @@ export class PruebaComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   clickSelected(obj:any): void {
     this.myControl.setValue(`${obj.title} - ${obj.artist}`);
-    this.objSelect = obj;
+    data = obj;
     this.filteredOptions = [];
+    this.openDialog();
   }
   btnclick(item:string): void {
     console.log('object',item);
@@ -203,6 +212,38 @@ export class PruebaComponent implements OnInit, OnDestroy, AfterViewInit {
   selector: 'dialog-content-example-dialog',
   templateUrl: 'dialog-content-example-dialog.html',
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule],
+  imports: [MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule,ReactiveFormsModule,MatSlideToggleModule],
 })
-export class DialogContentExampleDialog {}
+export class DialogContentExampleDialog {
+  formSongEdit = this.formBuilder.group({
+    title:[data.title, Validators.required],
+    artist:[data.artist, Validators.required],
+    genre:[data.genre, Validators.required],
+    album:[data.album, Validators.required],
+    duration:[data.duration, Validators.required],
+    year:[data.year, Validators.required],
+    trackNumber:[data.trackNumber, Validators.required],
+    isExplicit:[data.isExplicit]
+  });
+  
+  constructor(private formBuilder: FormBuilder) {
+  }
+  isNumeric(event:Event):void{
+    const valor = event.target['getAttribute']('formcontrolname');
+    !!valor && this.formSongEdit.get(valor).setValue(event.target['value'].replace(/\D/g, ''));
+  };
+  isCaracter(event:Event):void{
+    const valor = event.target['getAttribute']('formcontrolname');
+    !!valor && this.formSongEdit.get(valor).setValue(event.target['value'].replace(/[^a-zA-Z ñÑ]/g, '').toUpperCase());
+  }
+  edit(){
+    data.title = this.formSongEdit.get('title').value;
+    data.artist = this.formSongEdit.get('artist').value;
+    data.genre = this.formSongEdit.get('genre').value;
+    data.album = this.formSongEdit.get('album').value;
+    data.duration = +this.formSongEdit.get('duration').value;
+    data.year = +this.formSongEdit.get('year').value;
+    data.trackNumber = +this.formSongEdit.get('trackNumber').value;
+    data.isExplicit = this.formSongEdit.get('isExplicit').value;
+  }
+}

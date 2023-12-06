@@ -32,7 +32,7 @@
     @defer (when !!filteredOptions.length) {
       <datalist class="bg-light  position-absolute w-100" [ngClass]="{'d-block':!!filteredOptions.length}" style="z-index: 1;top: 55px;">
         @for (item of filteredOptions; track $index) {
-          <option (click)="openDialog()" [value]="item._id" (click)="clickSelected(item)" >{{item.title}} - {{item.artist}}</option>
+          <option [value]="item._id" (click)="clickSelected(item)" >{{item.title}} - {{item.artist}}</option>
         }
       </datalist>
     }
