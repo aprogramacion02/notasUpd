@@ -226,8 +226,7 @@ export class DialogContentExampleDialog {
     isExplicit:[data.isExplicit]
   });
   
-  constructor(private formBuilder: FormBuilder) {
-  }
+  constructor(private formBuilder: FormBuilder) {}
   isNumeric(event:Event):void{
     const valor = event.target['getAttribute']('formcontrolname');
     !!valor && this.formSongEdit.get(valor).setValue(event.target['value'].replace(/\D/g, ''));
