@@ -26,6 +26,6 @@ export class SongsService {
     return this.httpClient.post<any[]>(`${this.url}/songsCreate`,datos);
   }
   updateSongs(datos){
-    return this.httpClient.put<any[]>(`${this.url}/${datos}`,datos);
+    return this.httpClient.put<any[]>(`${this.url}/${datos.id}`,datos.datos);
   }
 }
