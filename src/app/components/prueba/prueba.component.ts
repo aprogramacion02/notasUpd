@@ -148,7 +148,7 @@ export class PruebaComponent implements OnInit, OnDestroy, AfterViewInit {
     console.log(this.dataPiker.get('start')); 
   }
   setStep(index: number) {
-    this.step = index;
+    this.step = index
   }
 
   nextStep() {
